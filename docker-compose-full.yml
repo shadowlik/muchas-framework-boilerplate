@@ -1,0 +1,86 @@
+version: "3.5"
+
+services:
+  boilerplate:
+    container_name: boilerplate
+    build: .
+    environment:
+    - NODE_ENV
+    - PROJECT_NAME
+    - DEBUG_PORT
+    - DATABASE_URI
+    - APM_HOST
+    - TZ=America/Sao_Paulo
+    volumes:
+      - ./:/app/
+    ports:
+      - 8080:8080
+      - 8181:8181
+    networks:
+      - loyall-network
+    command: npm run dev
+  # MongoDB
+  mongo:
+    image: mongo
+    logging:
+      driver: none
+    volumes:
+      - /data/db
+    ports:
+      - 27017:27017
+    networks:
+      - loyall-network
+  # Elasticsearch
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.1
+    logging:
+      driver: none
+    environment:
+      - discovery.type=single-node
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+    networks:
+      - loyall-network
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.0.1
+    logging:
+      driver: none
+    environment:
+      ELASTICSEARCH_HOSTS: http://elastic:9200
+    ports:
+      - 5601:5601
+    networks:
+      - loyall-network
+  # Elastic Search APM
+  elastic-apm:
+    image: docker.elastic.co/apm/apm-server:7.0.1
+    logging:
+      driver: none
+    ports:
+      - 8200:8200
+    volumes:
+      - ./apm-server.yml:/usr/share/apm-server/apm-server.yml
+    networks:
+      - loyall-network
+  # RabbitMQ
+  rabbit:
+    image: rabbitmq:3.7-management
+    logging:
+      driver: none
+    ports:
+      - 15672:15672
+      - 5672:5672
+    networks:
+      - loyall-network
+networks:
+  loyall-network:
+    name: loyall-network
+    driver: bridge

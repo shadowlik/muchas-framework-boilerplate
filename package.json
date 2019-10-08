@@ -1,0 +1,30 @@
+{
+  "name": "microservice-boilerplate",
+  "version": "1.0.0",
+  "description": "Microservice Boilerplate",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "concurrently \"tsc -w\" \"nodemon --legacy-watch --inspect=0.0.0.0:8081 dist\"",
+    "build": "tsc",
+    "lint": "eslint .",
+    "watch": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:loyall/dev/microservice-boilerplate.git"
+  },
+  "author": "Henrique Marques <henrique@loyall.com.br>",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^4.1.2",
+    "eslint": "^6.5.1",
+    "muchas-framework": "0.0.73",
+    "nodemon": "^1.19.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.3.3",
+    "typescript": "^3.6.3"
+  }
+}

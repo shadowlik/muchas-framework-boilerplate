@@ -1,0 +1,42 @@
+env: ${NODE_ENV} # Enviroment (development, production)
+name: ${PROJECT_NAME} # Project name
+debug: # Debug options
+  port: ${DEBUG_PORT} # NodeJS debug port
+web: # Web server
+  port: ${SERVER_PORT} # Web server port
+  secret: abc123456
+  expiresIn: 7d
+  headers: # Web server default response headers
+    Access-Control-Allow-Origin: '*'
+    Access-Control-Allow-Methods: 'GET,PUT,POST,DELETE,OPTIONS,PATCH'
+    Access-Control-Allow-Headers: '*'
+    Access-Control-Request-Method: '*'
+health: # Health web server
+  port: 9001 # Health web server port
+apm: # Application performance management
+  apmHost: ${APM_HOST} # Host
+  loglevel: ${APM_LEVEL} # Level
+  sample: 1 # Sample rate
+  token: ${APM_TOKEN}
+logger:
+  elasticsearch:
+    host: ${LOGGER_ELASTIC_HOST}
+    level: ${LOGGER_ELASTIC_LEVEL}
+    indexPrefix: ${PROJECT_NAME}
+database:
+  uri: ${DATABASE_URI}
+  poolSize: 20
+  model:
+    path: ${MODELS_PATH}
+broker:
+  host: ${BROKER_HOST}
+components:
+  path: dist/components
+routines: true
+# App
+services:
+  users: ${SERVICES_USERS}
+  email: ${SERVICES_EMAIL}
+  wallets: ${SERVICES_WALLETS}
+front:
+  redirectUrl: ${FRONT_REDIRECT_URL}

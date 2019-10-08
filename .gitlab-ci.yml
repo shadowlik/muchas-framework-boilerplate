@@ -1,0 +1,87 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+    DOCKER_IMAGE_TAG: "us.gcr.io/${GCLOUD_PROJECT}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"
+    DOCKER_IMAGE_TAG_PRD: "us.gcr.io/${GCLOUD_PROJECT}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_NAME}"
+    GITLAB_IMAGE_TAG: $CI_REGISTRY_IMAGE:${CI_COMMIT_REF_NAME}
+
+build:
+  image: 'docker:latest'
+  stage: build
+  script:
+    - echo "$DOCKER_IMAGE_TAG"
+    - docker build -t "${DOCKER_IMAGE_TAG}" .
+    - echo ${GCLOUD_JSON} > key.json
+    - cat key.json | docker login -u _json_key --password-stdin https://us.gcr.io
+    - docker push ${DOCKER_IMAGE_TAG}
+    # Push the to GitlabCI
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker tag ${DOCKER_IMAGE_TAG} $GITLAB_IMAGE_TAG
+    - docker push $GITLAB_IMAGE_TAG
+
+test:
+  image: docker:latest
+  stage: test
+  script:
+    - exit 0
+
+# include:
+#   - template: Code-Quality.gitlab-ci.yml
+# codequality:
+#   image: docker:latest
+#   stage: test
+#   variables:
+#     DOCKER_DRIVER: overlay
+#   services:
+#     - docker:dind
+#   script:
+#     - docker pull codeclimate/codeclimate
+#     - docker run --env CODECLIMATE_CODE="$PWD/src" --volume "$PWD/src":/code --volume /var/run/docker.sock:/var/run/docker.sock --volume /tmp/cc:/tmp/cc codeclimate/codeclimate analyze -f json > codeclimate.json
+#   artifacts:
+#     paths: [codeclimate.json]
+
+deploystage:
+  tags:
+    - stage
+  stage: deploy
+  environment: stage
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - echo "${STAGE_ENV}" > /home/gitlab-runner/w16/assets/.env
+    - docker login registry.gitlab.com -u "${STAGE_DEPLOY_TOKEN_USER}" -p "${STAGE_DEPLOY_TOKEN_PASS}"
+    - docker pull "${GITLAB_IMAGE_TAG}"
+    - docker stop "${PROJECT_NAME}" || true
+    - docker rm "${PROJECT_NAME}" || true
+    - docker run -d -p "${SERVER_PORT}:${SERVER_PORT}" --network=host --name="${PROJECT_NAME}" --restart="always" --env-file="/home/gitlab-runner/w16/assets/.env" "${GITLAB_IMAGE_TAG}"
+  only:
+    - /release-*/
+
+deployproduction:
+  # Custom gCloud SDK with envsub
+  image: shadowlik/cloud-sdk-muchas
+  stage: deploy
+  environment: production
+  script:
+    # Authenticate with GKE
+    - echo "$GCLOUD_JSON" > key.json
+    - gcloud auth activate-service-account --key-file=key.json
+    - gcloud config set project ${GCLOUD_PROJECT}
+    - gcloud config set container/cluster ${GCLOUD_CLUSTER}
+    - gcloud config set compute/zone ${GCLOUD_CLUSTER_ZONE}
+    - echo "gcloud container clusters get-credentials ${GCLOUD_CLUSTER} --zone ${GCLOUD_CLUSTER_ZONE}"
+    - gcloud container clusters get-credentials ${GCLOUD_CLUSTER} --zone ${GCLOUD_CLUSTER_ZONE}
+    # Do the deployment
+    - cat deployment.yml | envsubst | kubectl apply -f -
+    - cat deployment.yml | envsubst | kubectl rollout status -f -
+    - kubectl get all,ing -l app=${CI_ENVIRONMENT_SLUG}
+  only:
+    - tags

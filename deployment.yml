@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${CI_PROJECT_NAME}-deployment
+  labels:
+    app: ${CI_PROJECT_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${CI_PROJECT_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${CI_PROJECT_NAME}
+    spec:
+      containers:
+      - name: ${CI_PROJECT_NAME}
+        image: ${DOCKER_IMAGE_TAG}
+        ports:
+          - containerPort: ${SERVER_PORT}
+        env:
+          - name:   NODE_ENV
+            value:  production
+          - name:   DATABASE_URI
+            value:  ${DATABASE_URI}
+          - name:   SERVER_PORT
+            value:  '${SERVER_PORT}'
+          - name:   BROKER_HOST
+            value:  ${BROKER_HOST}
+          - name:   LOGGER_ELASTIC_HOST
+            value:  ${LOGGER_ELASTIC_HOST}
+          - name:   LOGGER_ELASTIC_LEVEL
+            value:  info
+          - name:   PROJECT_NAME
+            value:  ${CI_PROJECT_NAME}
+          - name:   APM_HOST
+            value:  ${APM_HOST}
+          - name:   APM_LEVEL
+            value:  error
+          - name:   APM_TOKEN
+            value:  ${APM_TOKEN}
+          # Services
+          - name:   SERVICES_USERS
+            value:  ${SERVICES_USERS}
+          - name:   SERVICES_EMAIL
+            value:  ${SERVICES_EMAIL}
+          - name:   FRONT_REDIRECT_URL
+            value:  ${FRONT_REDIRECT_URL}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: ${SERVER_PORT}
+          initialDelaySeconds: 10
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: ${SERVER_PORT}
+          initialDelaySeconds: 10
+          periodSeconds: 3
