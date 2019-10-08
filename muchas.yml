@@ -4,8 +4,8 @@ debug: # Debug options
   port: ${DEBUG_PORT} # NodeJS debug port
 web: # Web server
   port: ${SERVER_PORT} # Web server port
-  secret: abc123456
-  expiresIn: 7d
+  secret: abc123456 # JWT secret (default: 123456)
+  expiresIn: 7d # JWT Expire time
   headers: # Web server default response headers
     Access-Control-Allow-Origin: '*'
     Access-Control-Allow-Methods: 'GET,PUT,POST,DELETE,OPTIONS,PATCH'
@@ -17,19 +17,19 @@ apm: # Application performance management
   apmHost: ${APM_HOST} # Host
   loglevel: ${APM_LEVEL} # Level
   sample: 1 # Sample rate
-  token: ${APM_TOKEN}
-routines: true
-logger:
-  elasticsearch:
-    host: ${LOGGER_ELASTIC_HOST}
-    level: ${LOGGER_ELASTIC_LEVEL}
-    indexPrefix: ${PROJECT_NAME}
-database:
-  uri: ${DATABASE_URI}
-  poolSize: 20
-  model:
-    path: ${MODELS_PATH}
-broker:
-  host: ${BROKER_HOST}
-components:
-  path: dist/components
+  token: ${APM_TOKEN} # APM Auth Token
+routines: true # If you wish to enable the routines feature
+logger: # Logger configuration
+  elasticsearch: # Elasticsearch Loggaer
+    host: ${LOGGER_ELASTIC_HOST} # Elasticsearch host
+    level: ${LOGGER_ELASTIC_LEVEL} # Elasticsearch level
+    indexPrefix: ${PROJECT_NAME} # Index prefix
+database: # Database
+  uri: ${DATABASE_URI} # Database URI (eg: mongodb://localhost)
+  poolSize: 20 # Database Pool Size
+  model: # Database Pool Size
+    path: ${MODELS_PATH} # Models folder path
+broker: # Broker
+  host: ${BROKER_HOST} # Broker
+components: # Components
+  path: dist/components #  Components Path
