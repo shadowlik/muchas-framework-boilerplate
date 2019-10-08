@@ -18,6 +18,7 @@ apm: # Application performance management
   loglevel: ${APM_LEVEL} # Level
   sample: 1 # Sample rate
   token: ${APM_TOKEN}
+routines: true
 logger:
   elasticsearch:
     host: ${LOGGER_ELASTIC_HOST}
@@ -32,11 +33,3 @@ broker:
   host: ${BROKER_HOST}
 components:
   path: dist/components
-routines: true
-# App
-services:
-  users: ${SERVICES_USERS}
-  email: ${SERVICES_EMAIL}
-  wallets: ${SERVICES_WALLETS}
-front:
-  redirectUrl: ${FRONT_REDIRECT_URL}

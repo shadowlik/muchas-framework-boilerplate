@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "concurrently \"tsc -w\" \"nodemon --legacy-watch --inspect=0.0.0.0:8081 dist\"",
+    "dev": "concurrently \"tsc -w\" \"nodemon --legacy-watch --inspect=0.0.0.0:8181 dist\"",
     "build": "tsc",
     "lint": "eslint .",
     "watch": "tsc -w",
